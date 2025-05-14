@@ -1,0 +1,635 @@
+% % ------------------------  Example List --------------------------------
+% % -----------------------------------------------------------------------
+% eg1: FBSS 四分支串联体系
+% eg2: 单失效面，失效面形状类似U型
+% eg3: 多失效域，3个设计点
+% eg4: MRF: 改进的Rastrigin函数，失效域不连续
+% eg5: 线性功能函数,也即HDHP高维超平面
+% eg6: DRONLO 弹簧振子
+% eg7: 6维弹塑性框架
+% eg8: N维抛物面N-dim-Paraboloid
+% eg9: 10维 TSWMFM:Truss structure with multiple failure modes
+% eg10: 无穷间断算例
+% eg11: 二维扇形失效域
+% eg12: 2自由度弹簧振子-白噪声
+% eg13: VSIP : vehicle side imapct problem
+% eg14: 隔震结构与隔震设备综合失效问题
+% eg15: 6维高纬非线性数学算例
+% eg16: 二维跳跃间断算例
+% eg17: 三跨四层平面框架算例
+% eg18: 23BarsTruss (dimension fo random input is 10)
+% eg19: ANSYS-桁架算例
+% eg20: N维-动力算例 (白噪声激励，结构3层)
+% eg21: 动力算例 (确定性天然地震动，变量维度2，可讨论动力自由度)
+% eg22: 动力算例 (确定性天然地震动，讨论随机变量个数)
+% eg23: ANSYS-isoAP1000-response-spectrum
+% eg24: a toy example in AL-GP
+% eg25: Ishigami function
+% eg26: SFstru_sinInput (3 story-shear frame with Bouc-wen and sin-input)
+% eg27: FBSS_V2
+% eg28: eg28Function
+% eg29: eg29Function % 吕 P186
+% eg30: to test the banana PDF
+
+
+%% Default Parameter
+ProSys.fun_par.StadNrom = 'No';
+% default Paramenter for UQ
+%%
+% Correlation_on = 0
+%---------------------------功能函数及其参数--------------------------------
+    if strcmp(TestExample,'eg1')
+        % 随机变量模型
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        % Perfomance function
+        ProSys.fname=@FBSS;
+        ProSys.fun_par.type=1;ProSys.fun_par.a = 3;ProSys.fun_par.b = 7;   
+        ProSys.fun_par.f0 = 0;  
+        ProSys.Ndim = 2;
+        % Paramenter for UQ
+        ProSys.ymin = -1;
+        ProSys.ymax = 3;
+    elseif strcmp(TestExample,'eg1_Correlation') 
+        ProSys.muX = [0,0];
+        po = 0.95;
+        ProSys.sigmaX = [1,po;po,1];
+        ProSys.Distri = 'mvnrnd';
+        ProSys.ymin = -1;
+        ProSys.ymax = 3;
+        % Perfomance function
+        ProSys.fname=@FBSS;
+        ProSys.fun_par.type=1;ProSys.fun_par.a = 3;ProSys.fun_par.b = 7;
+        ProSys.fun_par.f0 = 0;
+        ProSys.Ndim = 2;
+        % Paramenter for UQ
+        ProSys.ymin = -1;
+        ProSys.ymax = 3;
+
+      elseif strcmp(TestExample,'eg1_MistureBanana')   
+        ProSys.Distri = 'MCMC';
+        ProSys.MCMC.ThinChain = 5;
+        ProSys.MCMC.NofChain = 100;
+        TargetPdfPar = [1.15,0.5,-0.5,0.9];
+        ProSys.MCMC.TargetPdf = @(X) MistureBananaPDF(X,TargetPdfPar);
+        ProSys.Ndim = 2;
+        ProSys.ymin = -5;
+        ProSys.ymax = 5;
+        % Perfomance function
+        ProSys.fname=@FBSS;
+        ProSys.fun_par.type=1;ProSys.fun_par.a = 3;ProSys.fun_par.b = 7;
+        ProSys.fun_par.f0 = 0;
+        ProSys.Ndim = 2;
+        % Paramenter for UQ
+        ProSys.ymin = -2;
+        ProSys.ymax = 3;
+
+    elseif strcmp(TestExample,'eg2')
+        
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        if Correlation_on==1
+            ProSys.muX = [0,0];
+            po = 0.95;
+            ProSys.sigmaX = [1,po;po,1];           
+            ProSys.Distri = 'mvnrnd';
+        end
+        ProSys.fname = @(X,fun_par) 0.5*(X(:,1)-2).^2 - 1.5*(X(:,2)-5).^3 -3
+        ProSys.fun_par = [];
+        ProSys.Ndim = 2;
+         % Paramenter for UQ
+        ProSys.ymin = 0;
+        ProSys.ymax = 1000;
+        
+        
+    elseif strcmp(TestExample,'eg3')
+        
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        if Correlation_on==1
+            ProSys.muX = [0,0];
+            po = 0.95;
+            ProSys.sigmaX = [1,po;po,1];
+            ProSys.Distri = 'mvnrnd';
+        end
+        ProSys.fun_par.c = 3;
+        ProSys.fname = @(x,fun_par) min([fun_par.c-1-x(:,2)+exp(-x(:,1).^2/10)+(x(:,1)/5).^4,...
+                             fun_par.c^2/2 - x(:,1).*x(:,2)]')';
+        ProSys.Ndim = 2;
+        % Paramenter for UQ
+        % C = 3;         
+        ProSys.ymin = -1;
+        ProSys.ymax = 3;
+        
+    elseif strcmp(TestExample,'eg4')
+        
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        f0 = 0;
+        ProSys.fname = @(x,fun_par) 10-(x(:,1).^2-5*cos(2*pi*x(:,1)))-...
+                              (x(:,2).^2-5*cos(2*pi*x(:,2)))-f0;
+        ProSys.Ndim = 2;  
+        ProSys.ymin = -10;
+        ProSys.ymax = 19;
+
+    elseif strcmp(TestExample,'eg4_Correlation')
+            ProSys.muX = [0,0];
+            po = 0.95;
+            ProSys.sigmaX = [1,po;po,1];
+            ProSys.Distri = 'mvnrnd';
+            f0 = 0;
+            ProSys.fname = @(x,fun_par) 10-(x(:,1).^2-5*cos(2*pi*x(:,1)))-...
+                (x(:,2).^2-5*cos(2*pi*x(:,2)))-f0;
+            ProSys.Ndim = 2;
+            ProSys.ymin = -25;
+            ProSys.ymax = 19;
+
+    elseif strcmp(TestExample,'eg4_MistureBanana')
+        ProSys.Distri = 'MCMC';
+        ProSys.MCMC.ThinChain = 5;
+        ProSys.MCMC.NofChain = 100;
+        TargetPdfPar = [1.15,0.5,-0.5,0.9];
+        ProSys.MCMC.TargetPdf = @(X) MistureBananaPDF(X,TargetPdfPar);
+        ProSys.Ndim = 2;
+        % Perfomance function
+        f0 = 0;
+        ProSys.fname = @(x,fun_par) 10-(x(:,1).^2-5*cos(2*pi*x(:,1)))-...
+            (x(:,2).^2-5*cos(2*pi*x(:,2)))-f0;
+        ProSys.Ndim = 2;
+        % Paramenter for UQ
+        ProSys.ymin = -25;
+        ProSys.ymax = 19;
+
+
+    elseif strcmp(TestExample,'eg5')
+        
+        ProSys.Ndim = 10;
+        ProSys.muX=zeros(1,ProSys.Ndim);ProSys.sigmaX=ones(1,ProSys.Ndim); 
+        ProSys.Distri=1*ones(1,ProSys.Ndim);        
+        beta = 3;
+        ProSys.fun_par = beta; 
+        ProSys.fname = @(x,beta) beta*sqrt(ProSys.Ndim) - sum(x,2);
+        
+%         xs2 = ProSys.Ndim-3*sqrt(2*ProSys.Ndim):0.5:ProSys.Ndim+3*sqrt(2*ProSys.Ndim);
+%         xs2(find(xs2<0)) = [];
+        
+    elseif strcmp(TestExample,'eg6') 
+        
+        ProSys.Ndim = 6;
+        ProSys.fun_par.egtype = 1;
+        ProSys.fun_par.StadNrom = 'No';
+        if ProSys.fun_par.egtype == 1
+            ProSys.muX = [1 1 0.1 0.5 1 1];
+            ProSys.sigmaX = [0.05 0.1 0.01 0.05 0.2 0.2];
+        elseif  ProSys.fun_par.egtype == 2
+            ProSys.muX=[1 1 0.1 0.5 0.6 1];
+            ProSys.sigmaX=[0.05 0.1 0.01 0.05 0.1 0.2];
+        elseif ProSys.fun_par.egtype == 3
+            ProSys.muX=[1 1 0.1 0.5 0.45 1];
+            ProSys.sigmaX=[0.05 0.1 0.01 0.05 0.075 0.2];
+        end
+        ProSys.Distri = ones(1,ProSys.Ndim);
+        ProSys.fname = @DRONLO;
+        % SDMCS需强制采用在标准状态空间的功能函数
+        if strcmp(SBM.method,'SDMCS')
+            ProSys.fun_par.StadNrom = 'Yes';
+        end
+        if strcmp(ProSys.fun_par.StadNrom,'Yes')
+            ProSys.fun_par.muX =  ProSys.muX;
+            ProSys.fun_par.sigmaX =  ProSys.sigmaX;
+            ProSys.muX = zeros(1,ProSys.Ndim);
+            ProSys.sigmaX = ones(1,ProSys.Ndim);
+            ProSys.Distri = ones(1,ProSys.Ndim);
+        end
+        % Paramenter for UQ
+        ProSys.ymin = -0.5;
+        ProSys.ymax = 1.5;
+        
+    elseif strcmp(TestExample,'eg7')
+        
+        ProSys.Ndim = 6;             
+        ProSys.muX = zeros(1,ProSys.Ndim);
+        ProSys.sigmaX = ones(1,ProSys.Ndim);
+        ProSys.Distri = ones(1,ProSys.Ndim);
+        ProSys.fname=@RPPF;
+        
+    elseif strcmp(TestExample,'eg8')
+        
+        ProSys.Ndim = 10;     
+        ProSys.muX = zeros(1,ProSys.Ndim);
+        ProSys.sigmaX = ones(1,ProSys.Ndim);
+        ProSys.Distri = ones(1,ProSys.Ndim);
+        n=10;
+        ProSys.fun_par.a=0.1; 
+        ProSys.fun_par.b=n/10; 
+        ProSys.fname=@NdimParaboloid; 
+        
+    elseif strcmp(TestExample,'eg9')
+        
+        ProSys.Ndim = 10;    
+        ProSys.muX = zeros(1,ProSys.Ndim);
+        ProSys.sigmaX = ones(1,ProSys.Ndim);
+        ProSys.Distri = ones(1,ProSys.Ndim);
+        ProSys.fname=@TSWMFM; 
+        
+    elseif strcmp(TestExample,'eg10')
+    DRP_TYPE = 2;
+    if DRP_TYPE == 1
+        %     TYPE 1 正态分布，函数1
+        ProSys.Ndim = 2;
+        ProSys.muX=[0,0]; ProSys.sigmaX=[1,1];
+        ProSys.Distri = [1,1];
+        sigma = 0.3;  % = 0.3,Pf = 0.0146
+        ProSys.fname =@(x,fun_par)  -((sigma*x(:,2)+2)-abs(tan(sigma*x(:,1)-pi/2))-1);
+    elseif DRP_TYPE == 2
+        %     TYPE 2 均匀分布，函数2
+        ProSys.Ndim = 2;
+        ProSys.a=[0 0];ProSys.b=[7 6];
+        ProSys.muX=[(ProSys.a(1)+ProSys.b(1))/2 (ProSys.a(2)+ProSys.b(2))/2];
+        ProSys.sigmaX=[sqrt((ProSys.b(1)-ProSys.a(1))^2/12),...
+            sqrt((ProSys.b(2)-ProSys.a(2))^2/12)];
+        ProSys.Distri=[5,5];
+        ProSys.fname =@(x,fun_par)  x(:,2)-abs(tan(x(:,1)))-1;
+    elseif DRP_TYPE == 3
+        %         TYPE 3 均匀分布，函数2
+        ProSys.Ndim = 2;
+        ProSys.a=[0 0];ProSys.b=[10 10];
+        ProSys.muX=[(ProSys.a(1)+ProSys.b(1))/2 (ProSys.a(2)+ProSys.b(2))/2];
+        ProSys.sigmaX=[sqrt((ProSys.b(1)-ProSys.a(1))^2/12),...
+            sqrt((ProSys.b(2)-ProSys.a(2))^2/12)];
+        ProSys.Distri=[5,5];
+        ProSys.fname =@(x,fun_par)  x(:,2)-abs(tan(0.5*x(:,1)+2))-3;
+    end
+    % SDMCS需强制采用在标准状态空间的功能函数
+    if strcmp(SBM.method,'SDMCS')
+       error('该算例不支持SDMCS')
+    end
+    
+    elseif strcmp(TestExample,'eg11')
+        
+        ProSys.Ndim = 2;
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        ProSys.fname = @(x,fun_par)  abs(atan(x(:,2)./x(:,1)))/pi-1e-2;
+        
+    elseif strcmp(TestExample,'eg12')
+        
+        ProSys.Ndim = 8;
+        ProSys.fun_par.egtype = 1;
+        if ProSys.fun_par.egtype == 1
+            ProSys.fun_par.mu_Fs =15;
+        elseif  ProSys.fun_par.egtype == 2
+            ProSys.fun_par.mu_Fs =21.5;
+        elseif ProSys.fun_par.egtype == 3
+            ProSys.fun_par.mu_Fs =27.5;
+        end
+        ProSys.muX = [1.5 0.01 1 0.01 0.05 0.02 ProSys.fun_par.mu_Fs 100];
+        ProSys.sigmaX =  ProSys.muX.*[10 10 20 20 40 50 10 10]/100;
+        ProSys.Distri = 2*ones(1,ProSys.Ndim);
+        ProSys.fname = @CLSS_2doscillator;
+        ProSys.fun_par.StadNrom = 'No';
+        
+    elseif strcmp(TestExample,'eg12_UQ') 
+        ProSys.Ndim = 8;
+        ProSys.fun_par.mu_Fs =15;
+        ProSys.muX = [1.5 0.01 1 0.01 0.05 0.02 ProSys.fun_par.mu_Fs 100];
+        ProSys.sigmaX =  ProSys.muX.*[10 10 20 20 40 50 10 10]/100;
+        ProSys.Distri = 2*ones(1,ProSys.Ndim);
+        ProSys.fname = @CLSS_2doscillator;
+        ProSys.fun_par.StadNrom = 'No';
+        ProSys.ymin = -2;
+        ProSys.ymax = 18;
+
+
+    elseif  strcmp(TestExample,'eg13')  
+        
+        ProSys.Ndim = 7;
+        ProSys.muX = zeros(1,ProSys.Ndim); ProSys.sigmaX = ones(1,ProSys.Ndim);TYPE=ones(1,ProSys.Ndim);
+        ProSys.fname = @VSIP;        
+        
+    elseif strcmp(TestExample,'eg14')  
+        
+        ProSys.Ndim = 7;
+        ProSys.fun_par.StadNrom = 'No';
+        ProSys.muX = [6000,3e7,6e4,0.05,2e4,1,1]; 
+        ProSys.sigmaX = [6000,3e7,6e4,0.05,2e4,1,1].*[0.1,0.1,0.2,0.2,0.2,0.2,0.5];
+        ProSys.Distri = ones(1,ProSys.Ndim)*2;      
+        % muX = [6000,3e7,6e4,0.05,2e4,3e7,1,1];
+        % sigmaX = [6000,3e7,6e4,0.05,2e4,3e7,1,1].*[0.1,0.1,0.2,0.2,0.2,0.3,0.2,0.5];        
+        ProSys.fname = @IsoSysOf4F;
+%         % SDMCS需强制采用在标准状态空间的功能函数
+%         if strcmp(SBM.method,'SDMCS')
+%             ProSys.fun_par.StadNrom = 'Yes';
+%         end
+%         % 在标准状态空间的功能函数
+%         if strcmp(ProSys.fun_par.StadNrom,'Yes')
+%             ProSys.fun_par.muX =  ProSys.muX;
+%             ProSys.fun_par.sigmaX =  ProSys.sigmaX;
+%             ProSys.muX = zeros(1,ProSys.Ndim);
+%             ProSys.sigmaX = ones(1,ProSys.Ndim);
+%             PoSys.Distri = ones(1,ProSys.Ndim);
+%         end
+
+    elseif strcmp(TestExample,'eg15') 
+        
+        ProSys.Ndim = 6;
+        ProSys.fun_par.StadNrom = 'No';
+        ProSys.muX = zeros(1,ProSys.Ndim); ProSys.sigmaX = ones(1,ProSys.Ndim);
+        ProSys.Distri=ones(1,ProSys.Ndim);
+        ProSys.fname = @HighNonlinerar6dim;
+     
+    elseif strcmp(TestExample,'eg16')
+        
+        ProSys.Ndim = 2;
+        ProSys.muX = zeros(1,ProSys.Ndim); ProSys.sigmaX = ones(1,ProSys.Ndim);
+        ProSys.Distri=ones(1,ProSys.Ndim);
+        ProSys.fname = @JumpDiscotinuityNdim2n
+         
+    elseif strcmp(TestExample,'eg17')     
+        ProSys.Ndim = 8; 
+        ProSys.muX = [20e3; 10e3; 5.0e3; 10e3; 5.0e3; 5.0e3; 8.0e3; 210e9];
+        ProSys.sigmaX  = [6e3; 3.0e3; 1.5e3; 3.0e3; 1.5e3; 1.5e3; 2.4e3; 10.5e9];
+        ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        ProSys.fun_par.DriftLimit = 10e-3; 
+        ProSys.fname = @(X,DriftLimit) My3S4F_Fun_LSF(X,DriftLimit)
+ 
+      elseif strcmp(TestExample,'eg17_UQ')
+        ProSys.Ndim = 8; 
+        ProSys.muX = [20e3; 10e3; 5.0e3; 10e3; 5.0e3; 5.0e3; 8.0e3; 210e9];
+        ProSys.sigmaX  = [6e3; 3.0e3; 1.5e3; 3.0e3; 1.5e3; 1.5e3; 2.4e3; 10.5e9];
+        ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        ProSys.fun_par.DriftLimit = 0; 
+        ProSys.fname = @(X,DriftLimit) -My3S4F_Fun_LSF(X,DriftLimit);
+        ProSys.ymin = 0.001;
+        ProSys.ymax = 0.015;       
+        for ii = 1:ProSys.Ndim
+            sigma = ProSys.sigmaX(ii);
+            mu = ProSys.muX(ii);
+            deta = sigma/mu;
+            sLn = sqrt(log(1+deta^2));
+            mLn = log(mu)-sLn^2/2;
+            par(ii,:) = [mLn sLn];      
+        end
+            ProSys.TargetPdf = @(X) lognpdf(X(:,1),par(1,1),par(1,2)).*...
+                                    lognpdf(X(:,2),par(2,1),par(2,2)).*...
+                                    lognpdf(X(:,3),par(3,1),par(3,2)).*...
+                                    lognpdf(X(:,4),par(4,1),par(4,2)).*...
+                                    lognpdf(X(:,5),par(5,1),par(5,2)).*...
+                                    lognpdf(X(:,6),par(6,1),par(6,2)).*...
+                                    lognpdf(X(:,7),par(7,1),par(7,2)).*...
+                                    lognpdf(X(:,8),par(8,1),par(8,2));
+                
+    elseif strcmp(TestExample,'eg18')
+        ProSys.Ndim = 10;
+        ProSys.muX = [2.0e-3, 2.1e11, 1.0e-3, 2.1e11, 5.0e4, 5.0e4, 5.0e4, 5.0e4, 5.0e4, 5.0e4];
+        ProSys.sigmaX  = [2.0e-4, 2.1e10, 1.0e-4, 2.1e10, 7.5e3, 7.5e3, 7.5e3, 7.5e3, 7.5e3, 7.5e3];
+        ProSys.Distri = [2,2,2,2,3,3,3,3,3,3];
+        ProSys.fun_par.DispThreshold = 12; %unit:cm
+        ProSys.fname = @main_23BarsTruss;
+
+    elseif strcmp(TestExample,'eg18_UQ')
+        ProSys.Ndim = 10;
+        ProSys.muX = [2.0e-3, 2.1e11, 1.0e-3, 2.1e11, 5.0e4, 5.0e4, 5.0e4, 5.0e4, 5.0e4, 5.0e4];
+        ProSys.sigmaX  = [2.0e-4, 2.1e10, 1.0e-4, 2.1e10, 7.5e3, 7.5e3, 7.5e3, 7.5e3, 7.5e3, 7.5e3];
+        ProSys.Distri = [2,2,2,2,3,3,3,3,3,3];
+        ProSys.fun_par.DispThreshold = 12; %unit:cm
+        ProSys.fname = @main_23BarsTruss;
+        % Paramenter for UQ
+        ProSys.ymin = -1;
+        ProSys.ymax = 7;
+        
+    elseif strcmp(TestExample,'eg19')
+        ProSys.Ndim = 4;
+        ProSys.muX = [2.5e-3,2.06e11,3.0e6,4.0e6];
+        ProSys.sigmaX = 0.2*ProSys.muX;
+        ProSys.Distri = [1,1,2,2];
+        
+        ProSys.fname = @MAT2ANS_10BarsTruss;
+        
+    elseif strcmp(TestExample,'eg20')
+        Tsim = 10;
+        BLWNpower = 1;             % BLWNpower = 2*pi*S0;
+        Wn = 22.3607;
+        dtint = 2*pi/Wn/40;
+        dtBLWN = floor(0.1/dtint)*dtint;
+        Nstep = ceil(Tsim/dtBLWN);
+%         X = normrnd(0,sqrt(BLWNpower/dtBLWN),10,Nstep);
+%         G = StructModel_BLWN(X,fun_par)
+        ProSys.Ndim = Nstep;
+        ProSys.muX = zeros(ProSys.Ndim,1);
+        ProSys.sigmaX = sqrt(BLWNpower/dtBLWN)*ones(ProSys.Ndim,1);
+        ProSys.Distri = ones(ProSys.Ndim,1);
+        ProSys.fname = @StructModel_BLWN;
+        
+    elseif strcmp(TestExample,'eg21') 
+        ProSys.Ndim = 2; 
+%       ProSys.fun_par.StadNrom = 'N0';
+        stru_type = 3;
+        TTTTEMP=3;
+        ProSys.fun_par.StadNrom = 'Yes';
+        ProSys.muX = [1,1];
+        ProSys.sigmaX  = [0.02,0.05];  % m,k的变异系数
+        ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        ProSys.fname = @StruDynamicNF_2RV;        
+        % 结构层数
+        ProSys.fun_par.stru_type = stru_type;  %=1,3F; =2,10F; =3,20F       
+        % 失效指标    
+        ProSys.fun_par.indexType = 2;
+        if ProSys.fun_par.indexType == 1
+            % 层最大位移限制
+            ProSys.fun_par.threshold = 0.050;
+        elseif ProSys.fun_par.indexType == 2
+            ProSys.fun_par.Thre =   [0.009140311	0.01068686	0.012233409	0.013779959	0.015326508
+                0.009866644	0.010355325	0.010844006	0.011332687	0.011821368
+                0.004536347	0.005110648	0.005684949	0.00625925	0.006833551];
+            ProSys.fun_par.threshold = ProSys.fun_par.Thre(ProSys.fun_par.stru_type,TTTTEMP)
+
+        end        
+        % SDMCS需强制采用在标准状态空间的功能函数
+        
+    elseif strcmp(TestExample,'eg22')
+       ProSys.fun_par.stru_type = stru_type; %=1,5F; =2,10F,=3,2F;
+       ProSys.fun_par.StadNrom = 'Yes';       
+%        mm = [3.57,3.36,3.14,2.99,2.65*ones(1,16)]*1e5; 
+%        kk = [0.8,0.77,0.74,0.68,0.62*ones(1,6)]*1.0e8;
+        mm = [2.82,2.76*ones(1,18),2.92]*1e5;
+        kk = [1.007,1.358,1.338,1.33,1.228,1.248,1.237,1.223,1.208,1.187,1.093,...
+            1.054,1.036,0.908,0.897,0.882,0.798,0.734,0.598,0.449]*1.0e8;
+        if ProSys.fun_par.stru_type == 1 
+             ProSys.Ndim = 10;
+             ProSys.muX = [mm(1:5),kk(1:5)];
+             ProSys.sigmaX = [mm(1:5)*0.02,kk(1:5)*0.05];
+             ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        elseif ProSys.fun_par.stru_type == 2 
+             ProSys.Ndim = 20;
+             ProSys.muX = [mm(1:10),kk(1:10)];
+             ProSys.sigmaX = [mm(1:10)*0.02,kk(1:10)*0.05];
+             ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        elseif ProSys.fun_par.stru_type == 3
+             ProSys.Ndim = 4;
+             ProSys.muX = [mm(1:2),kk(1:2)];
+             ProSys.sigmaX = [mm(1:2)*0.02,kk(1:2)*0.05];
+             ProSys.Distri = ones(1,ProSys.Ndim)*2;
+        end
+        ProSys.fname = @StruDynamicNF_nRV;
+        
+        % 失效指标
+        ProSys.fun_par.indexType = 2;
+        if ProSys.fun_par.indexType == 1
+            % 最大位移
+            ProSys.fun_par.threshold = 0.111; % pf = 0.01024
+        elseif ProSys.fun_par.indexType == 2
+            % 最大层间位移角         
+            ProSys.fun_par.Thre =   [0.008320767	0.009496917	0.010673067	0.011849218	0.013025368
+                0.015295959	0.016605722	0.017915486	0.019225249	0.020535012
+                0.014320083	0.015182829	0.016045575	0.016908321	0.017771068];
+            ProSys.fun_par.threshold = ProSys.fun_par.Thre(ProSys.fun_par.stru_type,TTTTEMP)
+        end
+        
+        % 算例改自：
+        % Structural reliability analysis via dimension reduction, adaptive sampling,
+        % and Monte Carlo simulationStructural reliability analysis via dimension reduction,
+        % adaptive sampling, and Monte Carlo simulation      
+
+    elseif strcmp(TestExample,'eg23')
+        ProSys.Ndim = 6;
+        ProSys.muX = [3.35e10,2543,0.2,2e11,7850,0.3];
+        ProSys.sigmaX = [0.1,0.02,0.2,0.1,0.02,0.2].*ProSys.muX;
+        ProSys.Distri = [1,1,1,1,1,1];
+        ProSys.fun_par.StadNrom = 'no';   
+        ProSys.fname = @MAT2ANS_AP1000_ES;
+        ProSys.fun_par.threshold = 0.450;
+        ProSys.fun_par.Ansys_solver_Path = 'C:\Software\Ansys 19.2\ANSYS Inc\v192\ansys\bin\winx64\ANSYS192.exe';
+        ProSys.fun_par.Ansys_Worksapce = 'C:\Users\smj\Desktop\MAT2ANS_project\project1_isoAP100_spectrum';
+        ProSys.fun_par.Project_APDL = 'command_input';
+        % 强制采用在标准状态空间的功能函数
+        ProSys.fun_par.StadNrom = 'Yes';     
+        
+    elseif strcmp(TestExample,'eg24')
+        ProSys.Ndim = 2;
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [1,1];
+        ProSys.Distri = [1,1];
+        ProSys.fname = @(X,fun_par) min([X(:,1)-X(:,2),X(:,1)+X(:,2)]')';
+        ProSys.ymin = -5;
+        ProSys.ymax = 3;
+
+    elseif strcmp(TestExample,'eg24_Correlation')
+        ProSys.Ndim = 2;
+        ProSys.muX = [0,0];
+        po = 0.95;
+        ProSys.sigmaX = [1,po;po,1];
+        ProSys.Distri = 'mvnrnd';
+        ProSys.fname = @(X,fun_par) min([X(:,1)-X(:,2),X(:,1)+X(:,2)]')';
+        ProSys.ymin = -7;
+        ProSys.ymax = 1;
+             
+    elseif strcmp(TestExample,'eg25')
+        ProSys.Ndim = 3;
+        ProSys.a=[-pi,-pi,-pi];ProSys.b=[pi,pi,pi];
+        ProSys.muX=[(ProSys.a+ProSys.b)/2];
+        ProSys.sigmaX=[sqrt((ProSys.b(1)-ProSys.a(1))^2/12),...
+            sqrt((ProSys.b(2)-ProSys.a(2))^2/12),...
+            sqrt((ProSys.b(3)-ProSys.a(3))^2/12)];
+        ProSys.Distri=[5,5,5];
+        ProSys.fun_par.a = 7;
+        ProSys.fun_par.b = 0.1;
+        ProSys.fname = @(X,fun_par) sin(X(:,1))+fun_par.a*sin(X(:,2)).^2+...
+                                     fun_par.b*X(:,3).^4.*sin(X(:,1));
+        ProSys.ymin = -10;
+        ProSys.ymax = 15;
+        
+    elseif strcmp(TestExample,'eg26')
+        ProSys.Ndim = 4;
+        ProSys.muX = [0,0,0,0];
+        ProSys.sigmaX = [1,1,1,1];
+        ProSys.Distri = [1,1,1,1];
+        ProSys.fname = @SFstru_sinInput;
+%         ProSys.fname = @MResponceMDF_OS_smj
+%         ProSys.fun_par = []
+        ProSys.ymin = 0;
+        ProSys.ymax = 0.06;
+        
+    elseif strcmp(TestExample,'eg27')
+        ProSys.muX = [0,0,3,7];
+        ProSys.sigmaX = [1,1,0.001,0.001];
+        ProSys.Distri = [1,1,1,1];
+        ProSys.fname=@FBSS_V2;
+        ProSys.fun_par.type=1;
+        ProSys.fun_par.f0 = 0;
+        ProSys.Ndim = 4;
+        
+    elseif strcmp(TestExample,'eg28')
+        ProSys.muX = [150,83.5,83.5,83.5];
+        ProSys.sigmaX = [0.25,0.12,0.12,0.12].*ProSys.muX;
+        ProSys.Distri = [1,1,1,1];
+        ProSys.Ndim = 4;
+%          ProSys.fun_par = [];
+        ProSys.fname = @eg28Function;
+        
+    elseif strcmp(TestExample,'eg29') % 吕 P186
+        ProSys.muX = [5.2872,5.2872,5.2872,3.8378];
+        ProSys.sigmaX = [0.1492,0.1492,0.1492,0.3853];
+        ProSys.Distri = [1,1,1,1];
+        ProSys.Ndim = 4;
+        %          ProSys.fun_par = [];
+        ProSys.fname = @eg29Function;
+
+    elseif strcmp(TestExample,'eg30')
+        ProSys.Distri = 'MCMC';
+        ProSys.MCMC.ThinChain = 5;
+        ProSys.MCMC.NofChain = 100;
+        TargetPdfPar = [1.15,0.5,0.9];
+        ProSys.MCMC.TargetPdf = @(X) BananaPDF(X,TargetPdfPar);
+        ProSys.Ndim = 2;
+        ProSys.ymin = -0.05;
+        ProSys.ymax = 0.05;
+
+        ProSys.fname = @(x,fun_Par) 0.05-0.5*mvnpdf(x,[-2,1],[0.8,0;0,0.8])...
+            -0.5*mvnpdf(x,[2,3],[0.8,0;0,0.8]);
+
+        ProSys.muX = [0,0];
+        ProSys.sigmaX = [2,2];
+    
+    elseif strcmp(TestExample,'eg31')
+        % Defination of  Random varibales
+        ProSys.Ndim = 21;
+        ProSys.muX = [1.33E+05	8.90E+04  7.12E+04	2.1738E+10	2.3796E+10	8.1344E-03...
+            1.5090E-02	2.1375E-02	2.5961E-02	1.0812E-02	1.4105E-02	2.3279E-02  ...
+            2.5961E-02	3.1256E-01	3.7210E-01	5.0606E-01	5.5815E-01	2.5302E-01 ...
+            2.9117E-01	3.7303E-01	4.1860E-01];
+        ProSys.sigmaX = [4.04E+04	3.56E+04	2.85E+04	1.9152E+09	1.9152E+09	1.0834E-03...
+            1.2980E-03	2.5961E-03	3.0288E-03	2.5961E-03	3.4615E-03	5.6249E-03...
+            6.4902E-03	5.5815E-03	7.4420E-03	9.3025E-02	1.1163E-01	9.3025E-02...
+            1.0232E-01	1.2093E-01	1.9537E-01];
+        ProSys.Distri = [ones(1,3)*2,ones(1,18)*6];
+        % Variables
+
+
+
+
+
+    end
+   
+%--------------------------------------------------------------------------   
+
+% -------------------------------------------------------------------------
+% % 强制采用在标准状态空间的功能函数
+% if exist('SBM')
+%     if strcmp(SBM.method,'SDMCS')
+%         ProSys.fun_par.StadNrom = 'Yes';
+%     end
+%     
+%     if strcmp(ProSys.fun_par.StadNrom,'Yes')
+%         ProSys.fun_par.muX =  ProSys.muX;
+%         ProSys.fun_par.sigmaX =  ProSys.sigmaX;
+%         ProSys.muX = zeros(1,ProSys.Ndim);
+%         ProSys.sigmaX = ones(1,ProSys.Ndim);
+%         ProSys.Distri = ones(1,ProSys.Ndim);
+%     end
+% end
